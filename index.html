@@ -444,7 +444,8 @@
         
         <div class="controls" data-html2canvas-ignore="true">
             <button class="primary" onclick="toggleAdmin()" id="login-btn">🔑 Admin Login</button>
-            <button class="secondary" onclick="toggleMute()" id="mute-btn">🔊 ON</button>
+            <button class="secondary" onclick="toggleMusic()" id="music-btn">🎵 Music OFF</button>
+            <button class="secondary" onclick="toggleMute()" id="mute-btn">🔊 SFX ON</button>
             <button class="hype" onclick="localHype()">🎉 HYPE</button>
             <button class="secondary" onclick="copyImage()" id="copy-btn">📸 Copy Image</button>
             <button class="secondary" onclick="resetBoard()" id="reset-btn" style="display:none">🗑️ Reset Board</button>
@@ -488,7 +489,7 @@
         };
         // ==========================================================
 
-        const ADMIN_PASSWORD = "chode"; 
+        const ADMIN_PASSWORD = "twisted_chode"; 
         const TILT_STRENGTH = 4;
         
         // Define Tasks with Requirements
@@ -531,6 +532,7 @@
 
         let isAdmin = false; 
         let isMuted = false;
+        let isMusicPlaying = false;
         let isOffline = false;
         let db, boardRef;
         let connectionTimeout;
@@ -541,6 +543,11 @@
             win: new Audio('https://oldschool.runescape.wiki/images/Level_up_fanfare.ogg')
         };
         Object.values(sounds).forEach(s => s.volume = 0.5);
+
+        // Music Player
+        const bgm = new Audio('music/Sea_Shanty_2.ogg');
+        bgm.loop = true;
+        bgm.volume = 0.3;
 
         async function init() {
             if (!firebaseConfig.apiKey) {
@@ -786,7 +793,7 @@
                         animateClick(tile);
                         saveData();
                         render();
-                        if (tileData.done && completedCount === 15) checkWin(); // 15 because current update makes it 16
+                        if (tileData.done && completedCount === 16) checkWin(); // Updated to 16 for safety
                     }
                 };
 
@@ -880,7 +887,19 @@
         
         window.toggleMute = () => {
             isMuted = !isMuted;
-            document.getElementById('mute-btn').innerText = isMuted ? "🔇 OFF" : "🔊 ON";
+            document.getElementById('mute-btn').innerText = isMuted ? "🔇 OFF" : "🔊 SFX ON";
+        };
+
+        window.toggleMusic = () => {
+            if (isMusicPlaying) {
+                bgm.pause();
+                isMusicPlaying = false;
+                document.getElementById('music-btn').innerText = "🎵 Music OFF";
+            } else {
+                bgm.play().catch(e => alert("Interact with page first to play audio"));
+                isMusicPlaying = true;
+                document.getElementById('music-btn').innerText = "🎵 Music ON";
+            }
         };
 
         window.localHype = () => { playSound('win'); checkWin(); };
