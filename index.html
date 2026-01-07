@@ -72,7 +72,7 @@
             border: 4px solid var(--tile-border);
             border-radius: 25px;
             padding: 20px;
-            width: 320px; /* Slightly wider for longer names */
+            width: 320px;
             box-shadow: 0 0 0 4px #1a0505, inset 0 0 30px rgba(0,0,0,0.5);
             display: flex;
             flex-direction: column;
@@ -110,7 +110,6 @@
         .rng-btn:hover { transform: scale(1.02); filter: brightness(1.1); }
         .rng-btn:active { transform: scale(0.98); }
 
-        /* Obtained State */
         .rng-btn.obtained {
             background: linear-gradient(135deg, #5a2e2e, #b30000);
             border-color: var(--gold-drop);
@@ -140,7 +139,7 @@
             margin-left: 10px;
         }
 
-        /* Status Indicator Overlay (Top Left) */
+        /* Status Indicator Overlay */
         #view-status {
             position: absolute; top: 15px; left: 15px;
             font-size: 16px; background: rgba(0,0,0,0.6);
@@ -148,7 +147,6 @@
             color: #aaa; z-index: 50; pointer-events: none;
         }
 
-        /* Network Sync Status (Top Right) */
         #sync-status {
             position: absolute; top: 15px; right: 15px;
             font-size: 16px; background: rgba(0,0,0,0.6);
@@ -221,7 +219,6 @@
             font-weight: bold; animation: breathe 3s infinite ease-in-out;
             overflow: hidden;
             
-            /* Image handling */
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
@@ -241,13 +238,32 @@
         }
 
         .tile-name {
-            font-size: 14px; line-height: 1.1; z-index: 2; pointer-events: none;
-            background: rgba(0, 0, 0, 0.6);
+            font-size: 13px; line-height: 1.1; z-index: 2; pointer-events: none;
+            background: rgba(0, 0, 0, 0.7);
             color: #fff;
             padding: 4px;
             border-radius: 4px;
             width: 90%;
             text-shadow: 1px 1px 0 #000;
+            position: absolute; top: 10px;
+        }
+
+        .tile-counter {
+            position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 2.5rem; color: rgba(255,255,255,0.8);
+            text-shadow: 2px 2px 0 #000;
+            z-index: 3; pointer-events: none;
+        }
+
+        .tile-players {
+            position: absolute; bottom: 5px; width: 95%;
+            font-size: 10px; color: #ffcccc;
+            text-shadow: 1px 1px 0 #000;
+            z-index: 4; pointer-events: none;
+            background: rgba(0,0,0,0.6);
+            border-radius: 4px; padding: 2px;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
         }
 
         .tile.done {
@@ -275,7 +291,7 @@
 
         .check-mark {
             display: none; position: absolute;
-            top: 4px; right: 6px; color: #fff;
+            top: 2px; right: 4px; color: #fff;
             font-size: 16px; filter: drop-shadow(1px 1px 0 #000);
             z-index: 5;
         }
@@ -376,7 +392,6 @@
             margin: 15px auto; border-radius: 10px;
         }
         
-        /* Mobile Layout Adjustment */
         @media (max-width: 850px) {
             body { flex-direction: column; align-items: center; }
             .rng-sidebar { width: 90%; max-width: 500px; order: 2; }
@@ -476,22 +491,27 @@
         const ADMIN_PASSWORD = "chode"; 
         const TILT_STRENGTH = 4;
         
+        // Define Tasks with Requirements
         const tasks = [
-            "2x Crystal Armour Seeds", "Boss Pet", "Clue Unique > 1M GP", "2x GWD Uniques",
-            "Blood Shard", "Basilisk Jaw", "Nightmare Unique", "2 Raid Purples",
-            "2.5M Sailing XP", "2x Zulrah Uniques", "Fox Whistle OR Golden Pheasant", "Zalcano Unique",
-            "Zealot's Robes", "Voidwaker Gem", "5x TzHaar Uniques", "Dragon Warhammer"
+            { name: "2x Crystal Armour Seeds", required: 2, file: "crystal-armour-seeds.png" },
+            { name: "Boss Pet", required: 1, file: "boss-pet.png" },
+            { name: "Clue Unique > 1M GP", required: 1, file: "clue-unique.png" },
+            { name: "2x GWD Uniques", required: 2, file: "gwd-uniques.png" },
+            { name: "Blood Shard", required: 1, file: "blood-shard.png" },
+            { name: "Basilisk Jaw", required: 1, file: "basilisk-jaw.png" },
+            { name: "Nightmare Unique", required: 1, file: "nightmare-unique.png" },
+            { name: "2 Raid Purples", required: 2, file: "raid-purples.png" },
+            { name: "2.5M Sailing XP", required: 1, file: "sailing-xp.png" },
+            { name: "2x Zulrah Uniques", required: 2, file: "zulrah-uniques.png" },
+            { name: "Fox Whistle OR Golden Pheasant", required: 1, file: "fox-whistle.png" },
+            { name: "Zalcano Unique", required: 1, file: "zalcano-unique.png" },
+            { name: "Zealot's Robes", required: 4, file: "zealots-robes.png" },
+            { name: "Voidwaker Gem", required: 1, file: "voidwaker-gem.png" },
+            { name: "5x TzHaar Uniques", required: 5, file: "tzhaar-uniques.png" },
+            { name: "Dragon Warhammer", required: 1, file: "dragon-warhammer.png" }
         ];
 
-        // UPDATED to .png as requested
-        const taskFilenames = [
-            "crystal-armour-seeds.png", "boss-pet.png", "clue-unique.png", "gwd-uniques.png",
-            "blood-shard.png", "basilisk-jaw.png", "nightmare-unique.png", "raid-purples.png",
-            "sailing-xp.png", "zulrah-uniques.png", "fox-whistle.png", "zalcano-unique.png",
-            "zealots-robes.png", "voidwaker-gem.png", "tzhaar-uniques.png", "dragon-warhammer.png"
-        ];
-
-        // RNG GAME DATA - Custom 10 Drops
+        // RNG GAME DATA
         const rngGames = [
             { name: "Tangleroot (Tithe Farm)", rate: 7500000, img: "tangleroot.png", drop: "Tangleroot Pet" },
             { name: "Onyx (Gem Bag)", rate: 2500000, img: "onyx.png", drop: "Uncut Onyx" },
@@ -505,9 +525,8 @@
             { name: "Bones", rate: 1, img: "bones.png", drop: "Bones" }
         ];
 
-        // State now includes tiles AND rng status for syncing
-        let tileState = tasks.map(() => ({ done: false }));
-        // Migrate RNG state to include 10 items
+        // New State Structure for Tiles: { done: bool, current: int, players: [] }
+        let tileState = tasks.map(() => ({ done: false, current: 0, players: [] }));
         let rngState = rngGames.map(() => ({ kc: 0, obtained: false }));
 
         let isAdmin = false; 
@@ -555,16 +574,25 @@
                         updateSyncStatus('green', 'Synced');
                         if (docSnap.exists()) {
                             const data = docSnap.data();
-                            if (data.tiles) tileState = data.tiles;
-                            // Check if RNG data exists and is the correct length
+                            
+                            // Load Tile State (migrating if necessary)
+                            if (data.tiles) {
+                                // Simple migration: if data is old array format, convert to new object format
+                                if (data.tiles.length > 0 && typeof data.tiles[0].current === 'undefined') {
+                                    tileState = data.tiles.map(t => ({ 
+                                        done: t.done, 
+                                        current: t.done ? 1 : 0, 
+                                        players: t.done ? ['Unknown'] : [] 
+                                    }));
+                                } else {
+                                    tileState = data.tiles;
+                                }
+                            }
+
                             if (data.rng && data.rng.length === rngGames.length) {
                                 rngState = data.rng;
-                            } else {
-                                // If mismatch (e.g. old 5 item version), reset local rngState to defaults but keep what we can if needed, or just full reset to avoid bugs
-                                // For simplicity and robustness with new drop table, we use default empty state if length mismatch, 
-                                // essentially resetting RNG on first load of new version.
-                                console.log("RNG Schema update detected");
                             }
+                            
                             render();
                             renderRngBoard();
                         } else {
@@ -587,7 +615,7 @@
             if (local) {
                 const parsed = JSON.parse(local);
                 if (parsed.tiles) tileState = parsed.tiles;
-                if (parsed.rng && parsed.rng.length === rngGames.length) rngState = parsed.rng;
+                if (parsed.rng) rngState = parsed.rng;
             }
             render();
             renderRngBoard();
@@ -629,37 +657,30 @@
         }
 
         function rollRng(index, e) {
-            // Anyone can roll RNG, it's a team effort!
             const game = rngGames[index];
             const data = rngState[index];
 
             if (data.obtained) {
-                // Already got it, just play sound
                 playSound('complete');
                 return;
             }
             
-            // Increment Team KC
             data.kc++;
             
-            // Roll
             const roll = Math.floor(Math.random() * game.rate) + 1;
             
             if (roll === 1) {
-                // DROP!
                 data.obtained = true;
                 playSound('win');
                 triggerConfetti();
                 spawnXpDrop(e.clientX, e.clientY, `DROP: ${game.drop}!`);
             } else {
-                // Dry
                 playSound('click');
                 spawnFloater(e.clientX, e.clientY, "+1 XP");
             }
 
-            // Save new state (KC update + potential drop)
             saveData();
-            renderRngBoard(); // update UI immediately
+            renderRngBoard(); 
         }
 
         function render() {
@@ -687,14 +708,15 @@
                 resetRngBtn.style.display = "none";
             }
 
-            tasks.forEach((taskName, i) => {
-                const tileData = tileState[i] || { done: false };
+            tasks.forEach((task, i) => {
+                // Ensure state exists
+                if (!tileState[i]) tileState[i] = { done: false, current: 0, players: [] };
+                const tileData = tileState[i];
                 
                 const tile = document.createElement('div');
                 tile.className = 'tile';
                 
-                // Add the image background (assumes images/ folder is relative)
-                tile.style.backgroundImage = `url('images/${taskFilenames[i]}')`;
+                tile.style.backgroundImage = `url('images/${task.file}')`;
 
                 if (!isAdmin) tile.classList.add('readonly');
                 tile.style.animationDelay = `${Math.random() * 2}s`;
@@ -704,11 +726,25 @@
                     completedCount++;
                 }
 
+                // Render inner HTML with new counters and player lists
+                let counterHtml = '';
+                if (task.required > 1) {
+                    counterHtml = `<div class="tile-counter">${tileData.current}/${task.required}</div>`;
+                }
+
+                let playersHtml = '';
+                if (tileData.players && tileData.players.length > 0) {
+                    playersHtml = `<div class="tile-players">${tileData.players.join(', ')}</div>`;
+                }
+
                 tile.innerHTML = `
                     <div class="check-mark">✓</div>
-                    <div class="tile-name">${taskName}</div>
+                    <div class="tile-name">${task.name}</div>
+                    ${counterHtml}
+                    ${playersHtml}
                 `;
 
+                // Handle Left Click (Add Drop)
                 tile.onclick = (e) => {
                     if (!isAdmin) {
                         animateClick(tile);
@@ -724,22 +760,52 @@
                         return;
                     }
 
-                    // Admin Actions
-                    tileData.done = !tileData.done;
-                    animateClick(tile);
-                    
+                    // Admin: Add Drop
                     if (tileData.done) {
-                        playSound('complete');
-                        spawnXpDrop(e.clientX, e.clientY, "+1 Bingo XP");
-                        triggerConfetti(); 
-                    } else {
                         playSound('click');
-                        spawnFloater(e.clientX, e.clientY, "UNDO");
+                        alert("This tile is already complete!");
+                        return;
                     }
 
-                    saveData(); // <--- THIS SAVES FOR EVERYONE
-                    render(); 
-                    if (tileData.done && completedCount === 15) checkWin(); 
+                    const playerName = prompt(`Who got the drop for ${task.name}?`);
+                    if (playerName) {
+                        tileData.current++;
+                        if (!tileData.players) tileData.players = [];
+                        tileData.players.push(playerName);
+
+                        if (tileData.current >= task.required) {
+                            tileData.done = true;
+                            playSound('complete');
+                            spawnXpDrop(e.clientX, e.clientY, "+1 Bingo XP");
+                            triggerConfetti();
+                        } else {
+                            playSound('click');
+                            spawnFloater(e.clientX, e.clientY, `Added ${playerName}`);
+                        }
+                        
+                        animateClick(tile);
+                        saveData();
+                        render();
+                        if (tileData.done && completedCount === 15) checkWin(); // 15 because current update makes it 16
+                    }
+                };
+
+                // Handle Right Click (Remove Drop / Undo)
+                tile.oncontextmenu = (e) => {
+                    e.preventDefault(); // Stop browser menu
+                    if (!isAdmin) return;
+
+                    if (tileData.current > 0) {
+                        if(confirm(`Remove last drop from ${tileData.players[tileData.players.length-1]}?`)) {
+                            tileData.current--;
+                            tileData.players.pop();
+                            tileData.done = false; // Un-complete if it was done
+                            
+                            playSound('click');
+                            saveData();
+                            render();
+                        }
+                    }
                 };
 
                 grid.appendChild(tile);
@@ -822,7 +888,7 @@
         window.resetBoard = () => {
             if (!isAdmin) return;
             if(confirm("Clear the BINGO board for EVERYONE? (RNG stats will stay)")) {
-                tileState = tasks.map(() => ({ done: false }));
+                tileState = tasks.map(() => ({ done: false, current: 0, players: [] }));
                 saveData();
                 render();
             }
