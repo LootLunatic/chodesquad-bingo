@@ -4,7 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ChodeSquad Bingo</title>
+    <!-- Screenshot Tool -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <!-- Confetti Tool -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
         @import url('https://fonts.cdnfonts.com/css/runescape-uf');
@@ -68,12 +70,12 @@
             color: #aaa; z-index: 50; pointer-events: none;
         }
 
-        /* Network Sync Status (Top Right) - NEW */
+        /* Network Sync Status (Top Right) */
         #sync-status {
             position: absolute; top: 15px; right: 15px;
             font-size: 16px; background: rgba(0,0,0,0.6);
             padding: 5px 10px; border-radius: 8px; border: 1px solid #555;
-            color: #aaa; z-index: 50; pointer-events: none;
+            color: #fff; z-index: 50; pointer-events: none;
             display: flex; align-items: center; gap: 6px;
         }
         .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
@@ -349,6 +351,8 @@
         // ==========================================================
         //  FIREBASE CONFIGURATION
         // ==========================================================
+        // Note: It is safe for this key to be public in client-side apps. 
+        // Security is handled by Firestore Rules, not hiding this key.
         const firebaseConfig = {
             apiKey: "AIzaSyASY3qQeFHqb50lCa2Rg57ILm1p2BSfHSQ",
             authDomain: "chodesquad-tracker.firebaseapp.com",
@@ -370,7 +374,7 @@
         ];
 
         let state = tasks.map(() => ({ done: false }));
-        let isAdmin = false;
+        let isAdmin = false; 
         let isMuted = false;
         let isOffline = false;
         let db, boardRef;
@@ -539,6 +543,11 @@
                     .catch(e => {
                         console.error("Save failed", e);
                         updateSyncStatus('red', 'Save Failed');
+                        if (e.code === 'permission-denied') {
+                            alert("SAVE FAILED: Permission Denied.\n\nYou need to update your Firestore Database Rules.\n\n1. Go to Firebase Console -> Build -> Firestore Database -> Rules\n2. Change 'allow read, write: if false;' to 'allow read, write: if true;'\n3. Click Publish.");
+                        } else {
+                            alert("Save Failed: " + e.message);
+                        }
                     });
             }
         }
