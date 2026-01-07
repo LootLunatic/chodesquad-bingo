@@ -489,7 +489,8 @@
         };
         // ==========================================================
 
-        const ADMIN_PASSWORD = "twisted_chode"; 
+                const ADMIN_HASH = "dHdpc3RlZF9jaG9kZQ=="; 
+        
         const TILT_STRENGTH = 4;
         
         // Define Tasks with Requirements
@@ -793,7 +794,7 @@
                         animateClick(tile);
                         saveData();
                         render();
-                        if (tileData.done && completedCount === 16) checkWin(); // Updated to 16 for safety
+                        if (tileData.done && completedCount === 16) checkWin(); // 15 because current update makes it 16
                     }
                 };
 
@@ -875,7 +876,8 @@
                 render();
             } else {
                 const pass = prompt("Enter Admin Password:");
-                if (pass === ADMIN_PASSWORD) {
+                // Simple Hash Check: Encodes user input to Base64 and compares
+                if (pass && btoa(pass) === ADMIN_HASH) {
                     isAdmin = true;
                     render();
                     showToast("Admin Mode Active");
