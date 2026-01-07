@@ -27,19 +27,22 @@
             font-family: 'RuneScape UF', sans-serif;
             color: var(--highlight-pink);
             display: flex;
-            flex-direction: column;
-            align-items: center;
+            flex-direction: row; /* Changed to row for side-by-side layout */
+            align-items: flex-start;
             justify-content: center;
             min-height: 100vh;
             margin: 0;
             user-select: none;
             overflow-x: hidden;
             perspective: 1000px;
+            gap: 40px;
+            padding: 20px;
+            flex-wrap: wrap;
         }
 
         /* --- THE BOARD WRAPPER --- */
         #capture-wrapper {
-            padding: 40px;
+            padding: 20px;
             background: transparent;
             transform-style: preserve-3d;
             transition: transform 0.1s ease-out;
@@ -61,6 +64,55 @@
             position: relative;
             transform: translateZ(0); 
         }
+
+        /* --- RNG SIDEBAR --- */
+        .rng-sidebar {
+            background: var(--bg-flesh-mid);
+            border: 4px solid var(--tile-border);
+            border-radius: 25px;
+            padding: 20px;
+            width: 250px;
+            box-shadow: 0 0 0 4px #1a0505, inset 0 0 30px rgba(0,0,0,0.5);
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            height: fit-content;
+            margin-top: 20px;
+        }
+
+        .rng-header {
+            text-align: center;
+            border-bottom: 2px solid var(--tile-border);
+            padding-bottom: 10px;
+            margin-bottom: 5px;
+            color: var(--highlight-pink);
+            text-shadow: 2px 2px 0 #500000;
+            font-size: 1.5rem;
+        }
+
+        .rng-btn {
+            background: var(--tile-flesh);
+            border: 3px solid var(--tile-border);
+            border-radius: 12px;
+            padding: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: transform 0.1s, background 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .rng-btn:hover { transform: scale(1.05); filter: brightness(1.1); }
+        .rng-btn:active { transform: scale(0.95); }
+
+        .rng-info { text-align: left; }
+        .rng-name { color: var(--text-dark); font-weight: bold; font-size: 1.1rem; }
+        .rng-rate { color: #5a2e2e; font-size: 0.9rem; }
+        .rng-kc { font-size: 0.8rem; color: #888; font-family: monospace; }
+        
+        .rng-icon { font-size: 2rem; }
 
         /* Status Indicator Overlay (Top Left) */
         #view-status {
@@ -132,7 +184,8 @@
 
         /* --- TILE DESIGN --- */
         .tile {
-            background: var(--tile-flesh); color: var(--text-dark);
+            background-color: var(--tile-flesh); 
+            color: var(--text-dark);
             aspect-ratio: 1; display: flex; flex-direction: column;
             align-items: center; justify-content: center;
             text-align: center; padding: 5px;
@@ -141,6 +194,12 @@
             position: relative; transition: all 0.2s;
             font-weight: bold; animation: breathe 3s infinite ease-in-out;
             overflow: hidden;
+            
+            /* Image handling */
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-blend-mode: luminosity; /* Makes it look grayscaleish/faded */
         }
 
         .tile.readonly { cursor: url('https://oldschool.runescape.wiki/images/Dragon_scimitar.png?123'), pointer; }
@@ -150,18 +209,30 @@
         }
 
         .tile:hover {
-            transform: scale(1.1) !important; background: #ffe6e6;
-            z-index: 10; box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+            transform: scale(1.1) !important; 
+            z-index: 10; box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+            background-blend-mode: normal; /* Color on hover */
         }
 
         .tile-name {
             font-size: 14px; line-height: 1.1; z-index: 2; pointer-events: none;
+            /* Text readability background */
+            background: rgba(0, 0, 0, 0.6);
+            color: #fff;
+            padding: 4px;
+            border-radius: 4px;
+            width: 90%;
+            text-shadow: 1px 1px 0 #000;
         }
 
         .tile.done {
-            background: var(--active-meat); color: #ffcccc;
-            border-color: #ff9999; box-shadow: inset 0 0 15px #330000, 0 0 15px var(--active-meat);
+            /* Full Color when done */
+            background-color: var(--active-meat); 
+            color: #ffcccc;
+            border-color: #ff9999; 
+            box-shadow: inset 0 0 15px #330000, 0 0 15px var(--active-meat);
             animation: none;
+            background-blend-mode: normal; 
         }
 
         /* Loot Beam Effect */
@@ -220,6 +291,7 @@
             margin-top: 25px; display: flex; gap: 15px;
             justify-content: center; transform: translateZ(0);
             flex-wrap: wrap; max-width: 600px;
+            width: 100%;
         }
 
         button {
@@ -280,6 +352,14 @@
             border: 2px solid #000; display: block;
             margin: 15px auto; border-radius: 10px;
         }
+        
+        /* Mobile Layout Adjustment */
+        @media (max-width: 850px) {
+            body { flex-direction: column; align-items: center; }
+            .rng-sidebar { width: 90%; max-width: 500px; order: 2; }
+            #capture-wrapper { order: 1; padding: 10px; }
+            #capture-area { width: 100%; max-width: 520px; }
+        }
     </style>
 </head>
 <body>
@@ -323,14 +403,22 @@
                 <!-- Tiles generated by JS -->
             </div>
         </div>
+        
+        <div class="controls" data-html2canvas-ignore="true">
+            <button class="primary" onclick="toggleAdmin()" id="login-btn">🔑 Admin Login</button>
+            <button class="secondary" onclick="toggleMute()" id="mute-btn">🔊 ON</button>
+            <button class="hype" onclick="localHype()">🎉 HYPE</button>
+            <button class="secondary" onclick="copyImage()" id="copy-btn">📸 Copy Image</button>
+            <button class="secondary" onclick="resetBoard()" id="reset-btn" style="display:none">🗑️ Reset</button>
+        </div>
     </div>
 
-    <div class="controls" data-html2canvas-ignore="true">
-        <button class="primary" onclick="toggleAdmin()" id="login-btn">🔑 Admin Login</button>
-        <button class="secondary" onclick="toggleMute()" id="mute-btn">🔊 ON</button>
-        <button class="hype" onclick="localHype()">🎉 HYPE</button>
-        <button class="secondary" onclick="copyImage()" id="copy-btn">📸 Copy Image</button>
-        <button class="secondary" onclick="resetBoard()" id="reset-btn" style="display:none">🗑️ Reset</button>
+    <!-- RNG Sidebar -->
+    <div class="rng-sidebar">
+        <div class="rng-header">XP WASTING</div>
+        <div id="rng-container">
+            <!-- Items injected by JS -->
+        </div>
     </div>
 
     <div id="toast">Image copied! Paste in Discord (Ctrl+V)</div>
@@ -351,8 +439,6 @@
         // ==========================================================
         //  FIREBASE CONFIGURATION
         // ==========================================================
-        // Note: It is safe for this key to be public in client-side apps. 
-        // Security is handled by Firestore Rules, not hiding this key.
         const firebaseConfig = {
             apiKey: "AIzaSyASY3qQeFHqb50lCa2Rg57ILm1p2BSfHSQ",
             authDomain: "chodesquad-tracker.firebaseapp.com",
@@ -373,7 +459,27 @@
             "Zealot's Robes", "Voidwaker Gem", "5x TzHaar Uniques", "Dragon Warhammer"
         ];
 
+        // UPDATED to .png as requested
+        const taskFilenames = [
+            "crystal-armour-seeds.png", "boss-pet.png", "clue-unique.png", "gwd-uniques.png",
+            "blood-shard.png", "basilisk-jaw.png", "nightmare-unique.png", "raid-purples.png",
+            "sailing-xp.png", "zulrah-uniques.png", "fox-whistle.png", "zalcano-unique.png",
+            "zealots-robes.png", "voidwaker-gem.png", "tzhaar-uniques.png", "dragon-warhammer.png"
+        ];
+
+        // RNG GAME DATA
+        const rngGames = [
+            { name: "Goblin", rate: 10, icon: "👹", drop: "Mind Rune" },
+            { name: "Dragon", rate: 128, icon: "🐉", drop: "Dragon Legs" },
+            { name: "Boss", rate: 512, icon: "💀", drop: "Unique Item" },
+            { name: "Pet", rate: 5000, icon: "🐾", drop: "Lil' Creator" },
+            { name: "3rd Age", rate: 32768, icon: "💎", drop: "3rd Age Pick" }
+        ];
+
         let state = tasks.map(() => ({ done: false }));
+        // RNG Stats are purely local
+        let rngStats = JSON.parse(localStorage.getItem('chode_rng_stats')) || rngGames.map(() => ({ kc: 0 }));
+
         let isAdmin = false; 
         let isMuted = false;
         let isOffline = false;
@@ -392,6 +498,9 @@
                 document.getElementById('setup-overlay').style.display = 'flex';
                 return;
             }
+
+            // Init RNG Board
+            renderRngBoard();
 
             const link = document.getElementById('enable-api-link');
             if (link) {
@@ -449,6 +558,53 @@
             document.getElementById('sync-text').innerText = text;
         }
 
+        function renderRngBoard() {
+            const container = document.getElementById('rng-container');
+            container.innerHTML = '';
+            
+            rngGames.forEach((game, index) => {
+                const btn = document.createElement('div');
+                btn.className = 'rng-btn';
+                const currentKc = rngStats[index]?.kc || 0;
+                
+                btn.innerHTML = `
+                    <div class="rng-info">
+                        <div class="rng-name">${game.name}</div>
+                        <div class="rng-rate">1/${game.rate}</div>
+                        <div class="rng-kc">KC: ${currentKc}</div>
+                    </div>
+                    <div class="rng-icon">${game.icon}</div>
+                `;
+                
+                btn.onclick = (e) => rollRng(index, e);
+                container.appendChild(btn);
+            });
+        }
+
+        function rollRng(index, e) {
+            const game = rngGames[index];
+            
+            // Increment KC
+            rngStats[index] = rngStats[index] || { kc: 0 };
+            rngStats[index].kc++;
+            localStorage.setItem('chode_rng_stats', JSON.stringify(rngStats));
+            renderRngBoard(); // update UI
+            
+            // Roll
+            const roll = Math.floor(Math.random() * game.rate) + 1;
+            
+            if (roll === 1) {
+                // DROP!
+                playSound('win');
+                triggerConfetti();
+                spawnXpDrop(e.clientX, e.clientY, `DROP: ${game.drop}!`);
+            } else {
+                // Dry
+                playSound('click');
+                spawnFloater(e.clientX, e.clientY, "Nothing interesting happens.");
+            }
+        }
+
         function render() {
             const grid = document.getElementById('grid');
             const progressLabel = document.getElementById('progress-label');
@@ -471,6 +627,10 @@
                 
                 const tile = document.createElement('div');
                 tile.className = 'tile';
+                
+                // Add the image background (assumes images/ folder is relative)
+                tile.style.backgroundImage = `url('images/${taskFilenames[i]}')`;
+
                 if (!isAdmin) tile.classList.add('readonly');
                 tile.style.animationDelay = `${Math.random() * 2}s`;
                 
