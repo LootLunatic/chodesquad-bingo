@@ -4,9 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ChodeSquad Bingo</title>
-    <!-- Screenshot Tool -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <!-- Confetti Tool -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
         @import url('https://fonts.cdnfonts.com/css/runescape-uf');
@@ -62,197 +60,139 @@
             transform: translateZ(0); 
         }
 
-        /* Status Indicator Overlay */
-        #status-overlay {
-            position: absolute;
-            top: 15px; left: 15px;
-            font-size: 16px;
-            background: rgba(0,0,0,0.6);
-            padding: 5px 10px;
-            border-radius: 8px;
-            border: 1px solid #555;
-            color: #aaa;
-            z-index: 50;
-            pointer-events: none;
-            transition: color 0.3s;
+        /* Status Indicator Overlay (Top Left) */
+        #view-status {
+            position: absolute; top: 15px; left: 15px;
+            font-size: 16px; background: rgba(0,0,0,0.6);
+            padding: 5px 10px; border-radius: 8px; border: 1px solid #555;
+            color: #aaa; z-index: 50; pointer-events: none;
         }
 
+        /* Network Sync Status (Top Right) - NEW */
+        #sync-status {
+            position: absolute; top: 15px; right: 15px;
+            font-size: 16px; background: rgba(0,0,0,0.6);
+            padding: 5px 10px; border-radius: 8px; border: 1px solid #555;
+            color: #aaa; z-index: 50; pointer-events: none;
+            display: flex; align-items: center; gap: 6px;
+        }
+        .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+        .dot.green { background: #0f0; box-shadow: 0 0 5px #0f0; }
+        .dot.red { background: #f00; box-shadow: 0 0 5px #f00; }
+        .dot.yellow { background: #fa0; box-shadow: 0 0 5px #fa0; }
+
         .header {
-            text-align: center;
-            margin-bottom: 15px;
-            width: 100%;
-            border-bottom: 2px solid var(--tile-border);
-            padding-bottom: 15px;
+            text-align: center; margin-bottom: 15px; width: 100%;
+            border-bottom: 2px solid var(--tile-border); padding-bottom: 15px;
         }
 
         h1 {
-            color: var(--highlight-pink);
-            text-shadow: 2px 2px 0 #500000;
-            margin: 0;
-            font-size: 3rem;
-            letter-spacing: 2px;
+            color: var(--highlight-pink); text-shadow: 2px 2px 0 #500000;
+            margin: 0; font-size: 3rem; letter-spacing: 2px;
         }
 
         /* Liquid Progress Bar */
         .progress-container {
-            width: 80%;
-            height: 20px;
-            background: #2a0a0a;
-            border: 2px solid var(--tile-border);
-            border-radius: 10px;
-            margin: 10px auto 5px auto;
-            overflow: hidden;
-            position: relative;
-            box-shadow: inset 0 2px 5px rgba(0,0,0,0.5);
+            width: 80%; height: 20px; background: #2a0a0a;
+            border: 2px solid var(--tile-border); border-radius: 10px;
+            margin: 10px auto 5px auto; overflow: hidden;
+            position: relative; box-shadow: inset 0 2px 5px rgba(0,0,0,0.5);
         }
 
         .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #8c4b4f, #b30000);
-            width: 0%; 
-            transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            height: 100%; background: linear-gradient(90deg, #8c4b4f, #b30000);
+            width: 0%; transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
             box-shadow: 0 0 10px #ff0000;
         }
 
         .progress-fill::after {
-            content: '';
-            position: absolute;
+            content: ''; position: absolute;
             top: 0; left: 0; right: 0; bottom: 0;
             background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.2) 50%, rgba(255,255,255,0) 100%);
             animation: shimmer 2s infinite;
         }
 
         @keyframes shimmer {
-            from { transform: translateX(-100%); }
-            to { transform: translateX(100%); }
+            from { transform: translateX(-100%); } to { transform: translateX(100%); }
         }
 
         .progress-text {
-            color: #d48a8a;
-            font-size: 1rem;
-            margin-top: 5px;
-            text-shadow: 1px 1px 0 #000;
+            color: #d48a8a; font-size: 1rem; margin-top: 5px; text-shadow: 1px 1px 0 #000;
         }
 
         .grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 10px;
-            background: rgba(0,0,0,0.2);
-            padding: 10px;
-            border-radius: 15px;
-            border: 2px solid var(--tile-border);
-            width: 100%;
+            display: grid; grid-template-columns: repeat(4, 1fr);
+            gap: 10px; background: rgba(0,0,0,0.2);
+            padding: 10px; border-radius: 15px;
+            border: 2px solid var(--tile-border); width: 100%;
             box-sizing: border-box;
         }
 
         /* --- TILE DESIGN --- */
         .tile {
-            background: var(--tile-flesh);
-            color: var(--text-dark);
-            aspect-ratio: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            padding: 5px;
-            border: 3px solid var(--tile-border);
-            border-radius: 15px;
-            cursor: pointer;
-            box-shadow: inset 2px 2px 5px rgba(255,255,255,0.4), inset -2px -2px 5px rgba(0,0,0,0.2);
-            position: relative;
-            transition: all 0.2s;
-            font-weight: bold;
-            animation: breathe 3s infinite ease-in-out;
-            overflow: hidden; /* For loot beam containment */
+            background: var(--tile-flesh); color: var(--text-dark);
+            aspect-ratio: 1; display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            text-align: center; padding: 5px;
+            border: 3px solid var(--tile-border); border-radius: 15px;
+            cursor: pointer; box-shadow: inset 2px 2px 5px rgba(255,255,255,0.4), inset -2px -2px 5px rgba(0,0,0,0.2);
+            position: relative; transition: all 0.2s;
+            font-weight: bold; animation: breathe 3s infinite ease-in-out;
+            overflow: hidden;
         }
 
-        /* View Mode is now interactive "Tactile Mode" */
-        .tile.readonly {
-            cursor: url('https://oldschool.runescape.wiki/images/Dragon_scimitar.png?123'), pointer;
-        }
-        /* No transform disable on readonly anymore, we want them to feel it */
+        .tile.readonly { cursor: url('https://oldschool.runescape.wiki/images/Dragon_scimitar.png?123'), pointer; }
 
         @keyframes breathe {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.02); }
+            0%, 100% { transform: scale(1); } 50% { transform: scale(1.02); }
         }
 
         .tile:hover {
-            transform: scale(1.1) !important;
-            background: #ffe6e6;
-            z-index: 10;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+            transform: scale(1.1) !important; background: #ffe6e6;
+            z-index: 10; box-shadow: 0 10px 20px rgba(0,0,0,0.3);
         }
 
         .tile-name {
-            font-size: 14px;
-            line-height: 1.1;
-            z-index: 2;
-            pointer-events: none;
+            font-size: 14px; line-height: 1.1; z-index: 2; pointer-events: none;
         }
 
-        /* Completed State */
         .tile.done {
-            background: var(--active-meat);
-            color: #ffcccc;
-            border-color: #ff9999;
-            box-shadow: inset 0 0 15px #330000, 0 0 15px var(--active-meat);
-            animation: none; 
+            background: var(--active-meat); color: #ffcccc;
+            border-color: #ff9999; box-shadow: inset 0 0 15px #330000, 0 0 15px var(--active-meat);
+            animation: none;
         }
 
         /* Loot Beam Effect */
         .tile.done::before {
-            content: '';
-            position: absolute;
+            content: ''; position: absolute;
             width: 200%; height: 200%;
             background: conic-gradient(from 0deg, transparent 0%, rgba(255,255,255,0.3) 10%, transparent 20%);
             animation: rotateBeam 4s linear infinite;
-            top: -50%; left: -50%;
-            z-index: 1;
-            pointer-events: none;
+            top: -50%; left: -50%; z-index: 1; pointer-events: none;
             transition: animation-duration 0.3s;
         }
-
-        /* Spin faster on hover (Interactive) */
-        .tile.done:hover::before {
-            animation-duration: 1s; /* Turbo speed */
-        }
+        .tile.done:hover::before { animation-duration: 1s; }
 
         @keyframes rotateBeam {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
+            from { transform: rotate(0deg); } to { transform: rotate(360deg); }
         }
 
         .check-mark {
-            display: none;
-            position: absolute;
-            top: 4px; right: 6px;
-            color: #fff;
-            font-size: 16px;
-            filter: drop-shadow(1px 1px 0 #000);
+            display: none; position: absolute;
+            top: 4px; right: 6px; color: #fff;
+            font-size: 16px; filter: drop-shadow(1px 1px 0 #000);
             z-index: 5;
         }
         .tile.done .check-mark { display: block; }
 
-        /* XP DROP (New Floater) */
         .xp-drop {
-            position: absolute;
-            color: #ffff00; /* OSRS XP Yellow */
-            font-weight: normal;
-            font-family: 'RuneScape UF', sans-serif;
-            font-size: 2rem;
-            pointer-events: none;
-            animation: floatUp 1.5s cubic-bezier(0, 0.5, 0.5, 1) forwards;
-            text-shadow: 2px 2px 0 #000;
-            z-index: 100;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            position: absolute; color: #ffff00; font-weight: normal;
+            font-family: 'RuneScape UF', sans-serif; font-size: 2rem;
+            pointer-events: none; animation: floatUp 1.5s cubic-bezier(0, 0.5, 0.5, 1) forwards;
+            text-shadow: 2px 2px 0 #000; z-index: 100;
+            display: flex; align-items: center; justify-content: center;
             background: url('https://oldschool.runescape.wiki/images/Bingo_lamp.png?123') no-repeat left center;
-            background-size: 24px;
-            padding-left: 28px;
+            background-size: 24px; padding-left: 28px;
         }
 
         @keyframes floatUp {
@@ -262,35 +202,29 @@
         }
 
         @keyframes squish {
-            0% { transform: scale(1); }
-            40% { transform: scale(0.9, 1.1); }
-            60% { transform: scale(1.1, 0.9); }
-            100% { transform: scale(1); }
+            0% { transform: scale(1); } 40% { transform: scale(0.9, 1.1); }
+            60% { transform: scale(1.1, 0.9); } 100% { transform: scale(1); }
         }
-        .clicked { animation: squish 0.15s ease-in-out; } /* Faster squish */
+        .clicked { animation: squish 0.15s ease-in-out; }
+
+        .floater {
+            position: absolute; color: #fff; font-weight: bold;
+            font-size: 1.5rem; pointer-events: none;
+            animation: floatUp 1s forwards; text-shadow: 2px 2px 0 #000; z-index: 100;
+        }
 
         /* Buttons */
         .controls {
-            margin-top: 25px;
-            display: flex;
-            gap: 15px;
-            justify-content: center;
-            transform: translateZ(0);
-            flex-wrap: wrap;
-            max-width: 600px;
+            margin-top: 25px; display: flex; gap: 15px;
+            justify-content: center; transform: translateZ(0);
+            flex-wrap: wrap; max-width: 600px;
         }
 
         button {
-            background: var(--tile-border);
-            color: var(--highlight-pink);
-            border: none;
-            border-radius: 20px;
-            padding: 12px 24px;
-            font-family: 'RuneScape UF', sans-serif;
-            font-size: 1.1rem;
-            cursor: pointer;
-            box-shadow: 0 4px 0 #500000;
-            transition: transform 0.1s;
+            background: var(--tile-border); color: var(--highlight-pink);
+            border: none; border-radius: 20px; padding: 12px 24px;
+            font-family: 'RuneScape UF', sans-serif; font-size: 1.1rem;
+            cursor: pointer; box-shadow: 0 4px 0 #500000; transition: transform 0.1s;
             display: flex; align-items: center; gap: 5px;
         }
         button:hover { filter: brightness(1.2); }
@@ -312,7 +246,6 @@
         #setup-overlay h2, #db-error-overlay h2 { color: var(--highlight-pink); margin-bottom: 20px; }
         #setup-overlay p, #db-error-overlay p { max-width: 600px; line-height: 1.6; color: #ddd; margin-bottom: 20px; }
         #setup-overlay pre { background: #222; padding: 15px; border-radius: 8px; text-align: left; }
-        .error-code { color: #f55; font-family: monospace; background: #300; padding: 4px; border-radius: 4px; }
         
         .error-steps {
             background: #222; padding: 20px; border-radius: 10px;
@@ -320,36 +253,30 @@
         }
         .error-steps a { text-decoration: underline; font-weight: bold; }
 
-        /* Toast Notification */
+        /* Toast */
         #toast {
-            position: fixed; bottom: 30px;
-            background: #222; border: 2px solid var(--highlight-pink);
-            color: var(--highlight-pink); padding: 15px 30px;
-            display: none; z-index: 100;
-            border-radius: 10px;
-            box-shadow: 0 5px 20px #000;
-            font-size: 1.2rem;
+            position: fixed; bottom: 30px; background: #222;
+            border: 2px solid var(--highlight-pink); color: var(--highlight-pink);
+            padding: 15px 30px; display: none; z-index: 100;
+            border-radius: 10px; box-shadow: 0 5px 20px #000; font-size: 1.2rem;
         }
 
-        /* Modal for Fallback */
+        /* Modal */
         .modal-overlay {
-            display: none; position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.85); z-index: 200;
             justify-content: center; align-items: center;
             flex-direction: column; backdrop-filter: blur(4px);
         }
         .modal-content {
             background: var(--bg-flesh-mid); padding: 20px;
-            border: 3px solid var(--tile-border);
-            border-radius: 20px;
+            border: 3px solid var(--tile-border); border-radius: 20px;
             text-align: center; box-shadow: 0 0 30px #000;
         }
         .modal-content img {
             max-width: 90vw; max-height: 70vh;
             border: 2px solid #000; display: block;
-            margin: 15px auto;
-            border-radius: 10px;
+            margin: 15px auto; border-radius: 10px;
         }
     </style>
 </head>
@@ -358,36 +285,28 @@
     <!-- GUIDE IF NO CONFIG -->
     <div id="setup-overlay">
         <h2>One-Time Setup Required</h2>
-        <p>To have a "Magic Board" that updates for everyone, the data needs a home in the cloud.<br>
-        Websites cannot remember data on their own.</p>
-        <p><b>1.</b> Go to console.firebase.google.com (Free)<br>
-        <b>2.</b> Create Project -> Add Web App<br>
-        <b>3.</b> Copy the `firebaseConfig` object.<br>
-        <b>4.</b> Edit this HTML file and paste it where it says "PASTE CONFIG HERE".</p>
+        <p>You need to tell the site where to send the data (Firebase).</p>
         <button class="primary" onclick="location.reload()">I Added The Config!</button>
     </div>
 
-    <!-- GUIDE IF DATABASE MISSING OR PERMISSION DENIED -->
+    <!-- GUIDE IF DB ERROR -->
     <div id="db-error-overlay">
         <h2>🛑 Connection Issue</h2>
         <p><b>Error:</b> The app cannot connect to the cloud database.</p>
         <div class="error-steps">
-            <p><b>Cause:</b> The Firestore API is likely disabled or the Database isn't created.</p>
-            <p>1. <a href="#" id="enable-api-link" target="_blank" style="color:#aaf; font-size:1.1rem;">Click Here to Enable Firestore API</a></p>
-            <p>2. Wait 2 minutes for Google to process it.</p>
-            <p>3. Refresh this page.</p>
+            <p>1. <a href="#" id="enable-api-link" target="_blank" style="color:#aaf;">Click Here to Enable Firestore API</a></p>
+            <p>2. Wait 2 minutes.</p>
+            <p>3. Refresh.</p>
         </div>
         <br>
-        <div style="border-top:1px solid #444; margin-top:10px; padding-top:10px; width:100%;">
-            <p style="font-size:0.9rem; color:#aaa;">Can't fix it right now?</p>
-            <button class="secondary" onclick="enableOfflineMode()">Continue Offline (No Sync)</button>
-        </div>
+        <button class="secondary" onclick="enableOfflineMode()">Continue Offline (No Sync)</button>
     </div>
 
     <div id="capture-wrapper">
         <div id="capture-area">
-            <!-- Status Text -->
-            <div id="status-overlay">🔒 View Only (Poke Mode)</div>
+            <!-- Indicators -->
+            <div id="view-status">🔒 View Only</div>
+            <div id="sync-status"><span class="dot yellow" id="sync-dot"></span> <span id="sync-text">Connecting...</span></div>
 
             <div class="header">
                 <h1>CHODESQUAD</h1>
@@ -414,18 +333,15 @@
 
     <div id="toast">Image copied! Paste in Discord (Ctrl+V)</div>
 
-    <!-- Fallback Modal -->
     <div id="modal-overlay" class="modal-overlay" data-html2canvas-ignore="true">
         <div class="modal-content">
             <h2 style="margin:0; color:var(--highlight-pink); text-shadow:1px 1px 0 #000;">Board Snapshot</h2>
-            <p style="color:#d48a8a;">Right-click the image below -> <b>Copy Image</b></p>
-            <img id="modal-img" alt="Bingo Board Preview">
+            <img id="modal-img">
             <button onclick="closeModal()">Close</button>
         </div>
     </div>
 
     <script type="module">
-        // Import Firebase (No build tools needed)
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, doc, onSnapshot, updateDoc, setDoc } 
         from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
@@ -456,11 +372,10 @@
         let state = tasks.map(() => ({ done: false }));
         let isAdmin = false;
         let isMuted = false;
-        let isOffline = false; // New offline flag
+        let isOffline = false;
         let db, boardRef;
         let connectionTimeout;
 
-        // --- AUDIO SYSTEM ---
         const sounds = {
             click: new Audio('https://oldschool.runescape.wiki/images/Interface_click.ogg'),
             complete: new Audio('https://oldschool.runescape.wiki/images/Genie_appear.ogg'),
@@ -468,23 +383,22 @@
         };
         Object.values(sounds).forEach(s => s.volume = 0.5);
 
-        // --- INIT ---
         async function init() {
             if (!firebaseConfig.apiKey) {
                 document.getElementById('setup-overlay').style.display = 'flex';
                 return;
             }
 
-            // Set up the API link in the error overlay dynamically
             const link = document.getElementById('enable-api-link');
             if (link) {
                 link.href = `https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=${firebaseConfig.projectId}`;
             }
 
-            // Watchdog: If DB doesn't respond in 6 seconds, assume error
+            updateSyncStatus('yellow', 'Connecting...');
+
+            // Watchdog
             connectionTimeout = setTimeout(() => {
-                console.warn("Connection watchdog triggered.");
-                handleDbError({ code: 'timeout', message: 'Connection timed out.' });
+                handleDbError({ code: 'timeout' });
             }, 6000);
 
             try {
@@ -495,6 +409,7 @@
                 onSnapshot(boardRef, {
                     next: (docSnap) => {
                         clearTimeout(connectionTimeout); 
+                        updateSyncStatus('green', 'Synced');
                         if (docSnap.exists()) {
                             state = docSnap.data().tiles;
                             render();
@@ -513,35 +428,36 @@
                 handleDbError(err);
             }
 
-            // Attempt to load from local storage if previously used offline
+            // Load backup just in case
             const local = localStorage.getItem('chode_offline_backup');
             if (local) state = JSON.parse(local);
             render();
         }
 
         function handleDbError(error) {
-            console.error("Database Error Details:", error);
-            // Show error screen with offline option
+            console.error("Database Error:", error);
+            updateSyncStatus('red', 'Connection Failed');
             document.getElementById('db-error-overlay').style.display = 'flex';
         }
 
-        // --- RENDER ---
+        function updateSyncStatus(color, text) {
+            document.getElementById('sync-dot').className = `dot ${color}`;
+            document.getElementById('sync-text').innerText = text;
+        }
+
         function render() {
             const grid = document.getElementById('grid');
             const progressLabel = document.getElementById('progress-label');
             const progressFill = document.getElementById('progress-fill');
-            const statusOverlay = document.getElementById('status-overlay');
+            const viewStatus = document.getElementById('view-status');
             const loginBtn = document.getElementById('login-btn');
             const resetBtn = document.getElementById('reset-btn');
 
             grid.innerHTML = '';
             let completedCount = 0;
 
-            let statusText = isOffline ? "⚠️ Offline Mode (Local Only)" : "🔒 View Only (Poke Mode)";
-            if (isAdmin) statusText = isOffline ? "🔓 Admin (Offline - Not Syncing)" : "🔓 Admin Mode (Editing)";
-            
-            statusOverlay.innerText = statusText;
-            statusOverlay.style.color = isAdmin ? (isOffline ? "#fa0" : "#0f0") : "#aaa";
+            viewStatus.innerText = isAdmin ? "🔓 Admin Mode" : "🔒 View Only";
+            viewStatus.style.color = isAdmin ? "#0f0" : "#aaa";
             
             loginBtn.innerText = isAdmin ? "🔓 Logged In" : "🔑 Admin Login";
             resetBtn.style.display = isAdmin ? "inline-block" : "none";
@@ -564,27 +480,22 @@
                     <div class="tile-name">${taskName}</div>
                 `;
 
-                // Click Logic
                 tile.onclick = (e) => {
                     if (!isAdmin) {
-                        // Viewer Mode
                         animateClick(tile);
                         playSound('click');
-                        
                         confetti({
                             particleCount: 15, spread: 40,
                             origin: { x: e.clientX / window.innerWidth, y: e.clientY / window.innerHeight },
                             colors: ['#8c4b4f', '#b30000', '#5a2e2e'],
                             scalar: 0.8, shapes: ['circle']
                         });
-
                         const words = ["SQUISH", "POKE", "PLOP", "MOIST", "THWACK", "EW"];
-                        const word = words[Math.floor(Math.random() * words.length)];
-                        spawnFloater(e.clientX, e.clientY, word);
+                        spawnFloater(e.clientX, e.clientY, words[Math.floor(Math.random() * words.length)]);
                         return;
                     }
 
-                    // Admin Mode
+                    // Admin Actions
                     tileData.done = !tileData.done;
                     animateClick(tile);
                     
@@ -597,7 +508,7 @@
                         spawnFloater(e.clientX, e.clientY, "UNDO");
                     }
 
-                    saveData();
+                    saveData(); // <--- THIS SAVES FOR EVERYONE
                     render(); 
                     if (tileData.done && completedCount === 15) checkWin(); 
                 };
@@ -605,7 +516,6 @@
                 grid.appendChild(tile);
             });
 
-            // Update Bars
             progressLabel.innerText = `${completedCount} / 16 COMPLETE`;
             const pct = (completedCount / 16) * 100;
             progressFill.style.width = `${pct}%`;
@@ -621,23 +531,25 @@
         function saveData() {
             if (isOffline) {
                 localStorage.setItem('chode_offline_backup', JSON.stringify(state));
+                updateSyncStatus('yellow', 'Saved Locally (Offline)');
             } else if (boardRef) {
-                updateDoc(boardRef, { tiles: state }).catch(e => {
-                    console.error("Save failed", e);
-                    handleDbError(e);
-                });
+                updateSyncStatus('yellow', 'Saving...');
+                updateDoc(boardRef, { tiles: state })
+                    .then(() => updateSyncStatus('green', 'Saved Publicly'))
+                    .catch(e => {
+                        console.error("Save failed", e);
+                        updateSyncStatus('red', 'Save Failed');
+                    });
             }
         }
 
-        // --- EXPOSED FUNCTIONS ---
-        
         window.enableOfflineMode = () => {
             isOffline = true;
             document.getElementById('db-error-overlay').style.display = 'none';
-            // Try load backup
             const backup = localStorage.getItem('chode_offline_backup');
             if(backup) state = JSON.parse(backup);
             render();
+            updateSyncStatus('red', 'Offline Mode');
             showToast("Offline Mode Active");
         };
 
@@ -663,10 +575,7 @@
             document.getElementById('mute-btn').innerText = isMuted ? "🔇 OFF" : "🔊 ON";
         };
 
-        window.localHype = () => {
-             playSound('win');
-             checkWin();
-        };
+        window.localHype = () => { playSound('win'); checkWin(); };
 
         window.resetBoard = () => {
             if (!isAdmin) return;
@@ -677,7 +586,6 @@
             }
         };
 
-        // --- EFFECTS ---
         function animateClick(element) {
             element.classList.remove('clicked');
             void element.offsetWidth; 
@@ -712,14 +620,11 @@
         }
 
         function triggerConfetti() {
-            confetti({
-                particleCount: 40, spread: 70, origin: { y: 0.7 },
-                colors: ['#ffcccc', '#ff9999', '#ffffff', '#b30000']
-            });
+            confetti({ particleCount: 40, spread: 70, origin: { y: 0.7 }, colors: ['#ffcccc', '#ff9999', '#ffffff', '#b30000'] });
         }
 
         function checkWin() {
-            var duration = 3 * 1000;
+            var duration = 3000;
             var animationEnd = Date.now() + duration;
             var defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
             var randomInRange = (min, max) => Math.random() * (max - min) + min;
@@ -733,32 +638,25 @@
             }, 250);
         }
 
-        // 3D Tilt
         document.addEventListener('mousemove', (e) => {
             if (window.innerWidth < 768) return;
             const wrapper = document.getElementById('capture-wrapper');
             const x = e.clientX / window.innerWidth;
             const y = e.clientY / window.innerHeight;
-            const rotateX = (0.5 - y) * TILT_STRENGTH;
-            const rotateY = (x - 0.5) * TILT_STRENGTH;
-            wrapper.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+            wrapper.style.transform = `perspective(1000px) rotateX(${(0.5 - y) * TILT_STRENGTH}deg) rotateY(${(x - 0.5) * TILT_STRENGTH}deg)`;
         });
 
-        // Screenshot
         window.copyImage = async () => {
             document.getElementById('capture-wrapper').style.transform = 'none';
             const copyBtn = document.getElementById('copy-btn');
             const originalText = copyBtn.innerText;
             copyBtn.innerText = "Generating...";
-            
             try {
                 await new Promise(r => setTimeout(r, 50));
-                const element = document.getElementById('capture-area');
-                const canvas = await html2canvas(element, {
+                const canvas = await html2canvas(document.getElementById('capture-area'), {
                     backgroundColor: null, scale: 2, 
-                    ignoreElements: (el) => el.hasAttribute('data-html2canvas-ignore') || el.id === 'status-overlay'
+                    ignoreElements: (el) => el.hasAttribute('data-html2canvas-ignore') || el.id === 'status-overlay' || el.id === 'sync-status' || el.id === 'view-status'
                 });
-
                 canvas.toBlob(async blob => {
                     try {
                         const item = new ClipboardItem({ "image/png": blob });
