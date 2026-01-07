@@ -19,6 +19,7 @@
             --highlight-pink: #ffcccc;
             --active-meat: #b30000;
             --text-dark: #3d0e10;
+            --gold-drop: #ffd700;
         }
 
         body {
@@ -27,7 +28,7 @@
             font-family: 'RuneScape UF', sans-serif;
             color: var(--highlight-pink);
             display: flex;
-            flex-direction: row; /* Changed to row for side-by-side layout */
+            flex-direction: row; 
             align-items: flex-start;
             justify-content: center;
             min-height: 100vh;
@@ -71,13 +72,15 @@
             border: 4px solid var(--tile-border);
             border-radius: 25px;
             padding: 20px;
-            width: 250px;
+            width: 320px; /* Slightly wider for longer names */
             box-shadow: 0 0 0 4px #1a0505, inset 0 0 30px rgba(0,0,0,0.5);
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            gap: 10px;
             height: fit-content;
             margin-top: 20px;
+            max-height: 80vh;
+            overflow-y: auto;
         }
 
         .rng-header {
@@ -94,7 +97,7 @@
             background: var(--tile-flesh);
             border: 3px solid var(--tile-border);
             border-radius: 12px;
-            padding: 10px;
+            padding: 8px 12px;
             cursor: pointer;
             display: flex;
             align-items: center;
@@ -104,15 +107,38 @@
             overflow: hidden;
         }
 
-        .rng-btn:hover { transform: scale(1.05); filter: brightness(1.1); }
-        .rng-btn:active { transform: scale(0.95); }
+        .rng-btn:hover { transform: scale(1.02); filter: brightness(1.1); }
+        .rng-btn:active { transform: scale(0.98); }
 
-        .rng-info { text-align: left; }
-        .rng-name { color: var(--text-dark); font-weight: bold; font-size: 1.1rem; }
-        .rng-rate { color: #5a2e2e; font-size: 0.9rem; }
-        .rng-kc { font-size: 0.8rem; color: #888; font-family: monospace; }
+        /* Obtained State */
+        .rng-btn.obtained {
+            background: linear-gradient(135deg, #5a2e2e, #b30000);
+            border-color: var(--gold-drop);
+            box-shadow: 0 0 10px var(--gold-drop);
+        }
+        .rng-btn.obtained .rng-name { color: var(--gold-drop); text-shadow: 1px 1px 0 #000; }
+        .rng-btn.obtained .rng-rate { color: #ffcccc; }
+        .rng-btn.obtained::after {
+            content: "OBTAINED";
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%) rotate(-10deg);
+            font-size: 1.5rem;
+            color: rgba(255, 215, 0, 0.3);
+            font-weight: bold;
+            pointer-events: none;
+        }
+
+        .rng-info { text-align: left; flex: 1; }
+        .rng-name { color: var(--text-dark); font-weight: bold; font-size: 1.0rem; }
+        .rng-rate { color: #5a2e2e; font-size: 0.8rem; }
+        .rng-kc { font-size: 0.8rem; color: #444; font-family: monospace; font-weight:bold; }
         
-        .rng-icon { font-size: 2rem; }
+        .rng-icon { 
+            width: 40px; height: 40px; 
+            background-size: contain; background-repeat: no-repeat; background-position: center;
+            margin-left: 10px;
+        }
 
         /* Status Indicator Overlay (Top Left) */
         #view-status {
@@ -199,7 +225,7 @@
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
-            background-blend-mode: luminosity; /* Makes it look grayscaleish/faded */
+            background-blend-mode: luminosity; 
         }
 
         .tile.readonly { cursor: url('https://oldschool.runescape.wiki/images/Dragon_scimitar.png?123'), pointer; }
@@ -211,12 +237,11 @@
         .tile:hover {
             transform: scale(1.1) !important; 
             z-index: 10; box-shadow: 0 10px 20px rgba(0,0,0,0.5);
-            background-blend-mode: normal; /* Color on hover */
+            background-blend-mode: normal; 
         }
 
         .tile-name {
             font-size: 14px; line-height: 1.1; z-index: 2; pointer-events: none;
-            /* Text readability background */
             background: rgba(0, 0, 0, 0.6);
             color: #fff;
             padding: 4px;
@@ -226,7 +251,6 @@
         }
 
         .tile.done {
-            /* Full Color when done */
             background-color: var(--active-meat); 
             color: #ffcccc;
             border-color: #ff9999; 
@@ -235,7 +259,6 @@
             background-blend-mode: normal; 
         }
 
-        /* Loot Beam Effect */
         .tile.done::before {
             content: ''; position: absolute;
             width: 200%; height: 200%;
@@ -409,7 +432,8 @@
             <button class="secondary" onclick="toggleMute()" id="mute-btn">🔊 ON</button>
             <button class="hype" onclick="localHype()">🎉 HYPE</button>
             <button class="secondary" onclick="copyImage()" id="copy-btn">📸 Copy Image</button>
-            <button class="secondary" onclick="resetBoard()" id="reset-btn" style="display:none">🗑️ Reset</button>
+            <button class="secondary" onclick="resetBoard()" id="reset-btn" style="display:none">🗑️ Reset Board</button>
+            <button class="secondary" onclick="resetRng()" id="reset-rng-btn" style="display:none">🎲 Reset RNG</button>
         </div>
     </div>
 
@@ -467,18 +491,24 @@
             "zealots-robes.png", "voidwaker-gem.png", "tzhaar-uniques.png", "dragon-warhammer.png"
         ];
 
-        // RNG GAME DATA
+        // RNG GAME DATA - Custom 10 Drops
         const rngGames = [
-            { name: "Goblin", rate: 10, icon: "👹", drop: "Mind Rune" },
-            { name: "Dragon", rate: 128, icon: "🐉", drop: "Dragon Legs" },
-            { name: "Boss", rate: 512, icon: "💀", drop: "Unique Item" },
-            { name: "Pet", rate: 5000, icon: "🐾", drop: "Lil' Creator" },
-            { name: "3rd Age", rate: 32768, icon: "💎", drop: "3rd Age Pick" }
+            { name: "Tangleroot (Tithe Farm)", rate: 7500000, img: "tangleroot.png", drop: "Tangleroot Pet" },
+            { name: "Onyx (Gem Bag)", rate: 2500000, img: "onyx.png", drop: "Uncut Onyx" },
+            { name: "Bandos Boots (Elite Minions)", rate: 1000000, img: "bandos-boots.png", drop: "Bandos Boots" },
+            { name: "Specific 3rd Age Items (Master Clues)", rate: 313168, img: "3rd-age-item.png", drop: "3rd Age Item" },
+            { name: "Draconic Visage (Mithril Dragon)", rate: 10000, img: "draconic-visage.png", drop: "Draconic Visage" },
+            { name: "Champion Scroll", rate: 5000, img: "champion-scroll.png", drop: "Champion Scroll" },
+            { name: "Dragon Warhammer", rate: 3000, img: "dwh.png", drop: "Dragon Warhammer" },
+            { name: "Bloodhound Pet", rate: 1000, img: "bloodhound.png", drop: "Bloodhound Pet" },
+            { name: "Bandos Hilt", rate: 500, img: "bandos-hilt.png", drop: "Bandos Hilt" },
+            { name: "Bones", rate: 1, img: "bones.png", drop: "Bones" }
         ];
 
-        let state = tasks.map(() => ({ done: false }));
-        // RNG Stats are purely local
-        let rngStats = JSON.parse(localStorage.getItem('chode_rng_stats')) || rngGames.map(() => ({ kc: 0 }));
+        // State now includes tiles AND rng status for syncing
+        let tileState = tasks.map(() => ({ done: false }));
+        // Migrate RNG state to include 10 items
+        let rngState = rngGames.map(() => ({ kc: 0, obtained: false }));
 
         let isAdmin = false; 
         let isMuted = false;
@@ -499,7 +529,7 @@
                 return;
             }
 
-            // Init RNG Board
+            // Init RNG Board empty first
             renderRngBoard();
 
             const link = document.getElementById('enable-api-link');
@@ -524,10 +554,21 @@
                         clearTimeout(connectionTimeout); 
                         updateSyncStatus('green', 'Synced');
                         if (docSnap.exists()) {
-                            state = docSnap.data().tiles;
+                            const data = docSnap.data();
+                            if (data.tiles) tileState = data.tiles;
+                            // Check if RNG data exists and is the correct length
+                            if (data.rng && data.rng.length === rngGames.length) {
+                                rngState = data.rng;
+                            } else {
+                                // If mismatch (e.g. old 5 item version), reset local rngState to defaults but keep what we can if needed, or just full reset to avoid bugs
+                                // For simplicity and robustness with new drop table, we use default empty state if length mismatch, 
+                                // essentially resetting RNG on first load of new version.
+                                console.log("RNG Schema update detected");
+                            }
                             render();
+                            renderRngBoard();
                         } else {
-                            setDoc(boardRef, { tiles: state }).catch(e => handleDbError(e));
+                            saveData(); // Create initial doc
                         }
                     },
                     error: (error) => {
@@ -543,8 +584,13 @@
 
             // Load backup just in case
             const local = localStorage.getItem('chode_offline_backup');
-            if (local) state = JSON.parse(local);
+            if (local) {
+                const parsed = JSON.parse(local);
+                if (parsed.tiles) tileState = parsed.tiles;
+                if (parsed.rng && parsed.rng.length === rngGames.length) rngState = parsed.rng;
+            }
             render();
+            renderRngBoard();
         }
 
         function handleDbError(error) {
@@ -564,16 +610,17 @@
             
             rngGames.forEach((game, index) => {
                 const btn = document.createElement('div');
-                btn.className = 'rng-btn';
-                const currentKc = rngStats[index]?.kc || 0;
+                const data = rngState[index] || { kc: 0, obtained: false };
+                
+                btn.className = `rng-btn ${data.obtained ? 'obtained' : ''}`;
                 
                 btn.innerHTML = `
                     <div class="rng-info">
                         <div class="rng-name">${game.name}</div>
-                        <div class="rng-rate">1/${game.rate}</div>
-                        <div class="rng-kc">KC: ${currentKc}</div>
+                        <div class="rng-rate">1/${game.rate.toLocaleString()}</div>
+                        <div class="rng-kc">Team KC: ${data.kc.toLocaleString()}</div>
                     </div>
-                    <div class="rng-icon">${game.icon}</div>
+                    <div class="rng-icon" style="background-image: url('images/${game.img}')"></div>
                 `;
                 
                 btn.onclick = (e) => rollRng(index, e);
@@ -582,27 +629,37 @@
         }
 
         function rollRng(index, e) {
+            // Anyone can roll RNG, it's a team effort!
             const game = rngGames[index];
+            const data = rngState[index];
+
+            if (data.obtained) {
+                // Already got it, just play sound
+                playSound('complete');
+                return;
+            }
             
-            // Increment KC
-            rngStats[index] = rngStats[index] || { kc: 0 };
-            rngStats[index].kc++;
-            localStorage.setItem('chode_rng_stats', JSON.stringify(rngStats));
-            renderRngBoard(); // update UI
+            // Increment Team KC
+            data.kc++;
             
             // Roll
             const roll = Math.floor(Math.random() * game.rate) + 1;
             
             if (roll === 1) {
                 // DROP!
+                data.obtained = true;
                 playSound('win');
                 triggerConfetti();
                 spawnXpDrop(e.clientX, e.clientY, `DROP: ${game.drop}!`);
             } else {
                 // Dry
                 playSound('click');
-                spawnFloater(e.clientX, e.clientY, "Nothing interesting happens.");
+                spawnFloater(e.clientX, e.clientY, "+1 XP");
             }
+
+            // Save new state (KC update + potential drop)
+            saveData();
+            renderRngBoard(); // update UI immediately
         }
 
         function render() {
@@ -612,6 +669,7 @@
             const viewStatus = document.getElementById('view-status');
             const loginBtn = document.getElementById('login-btn');
             const resetBtn = document.getElementById('reset-btn');
+            const resetRngBtn = document.getElementById('reset-rng-btn');
 
             grid.innerHTML = '';
             let completedCount = 0;
@@ -620,10 +678,17 @@
             viewStatus.style.color = isAdmin ? "#0f0" : "#aaa";
             
             loginBtn.innerText = isAdmin ? "🔓 Logged In" : "🔑 Admin Login";
-            resetBtn.style.display = isAdmin ? "inline-block" : "none";
+            
+            if (isAdmin) {
+                resetBtn.style.display = "inline-block";
+                resetRngBtn.style.display = "inline-block";
+            } else {
+                resetBtn.style.display = "none";
+                resetRngBtn.style.display = "none";
+            }
 
             tasks.forEach((taskName, i) => {
-                const tileData = state[i] || { done: false };
+                const tileData = tileState[i] || { done: false };
                 
                 const tile = document.createElement('div');
                 tile.className = 'tile';
@@ -693,20 +758,23 @@
         }
 
         function saveData() {
+            const dataToSave = {
+                tiles: tileState,
+                rng: rngState
+            };
+
             if (isOffline) {
-                localStorage.setItem('chode_offline_backup', JSON.stringify(state));
+                localStorage.setItem('chode_offline_backup', JSON.stringify(dataToSave));
                 updateSyncStatus('yellow', 'Saved Locally (Offline)');
             } else if (boardRef) {
                 updateSyncStatus('yellow', 'Saving...');
-                updateDoc(boardRef, { tiles: state })
+                updateDoc(boardRef, dataToSave)
                     .then(() => updateSyncStatus('green', 'Saved Publicly'))
                     .catch(e => {
                         console.error("Save failed", e);
                         updateSyncStatus('red', 'Save Failed');
                         if (e.code === 'permission-denied') {
                             alert("SAVE FAILED: Permission Denied.\n\nYou need to update your Firestore Database Rules.\n\n1. Go to Firebase Console -> Build -> Firestore Database -> Rules\n2. Change 'allow read, write: if false;' to 'allow read, write: if true;'\n3. Click Publish.");
-                        } else {
-                            alert("Save Failed: " + e.message);
                         }
                     });
             }
@@ -716,8 +784,13 @@
             isOffline = true;
             document.getElementById('db-error-overlay').style.display = 'none';
             const backup = localStorage.getItem('chode_offline_backup');
-            if(backup) state = JSON.parse(backup);
+            if (backup) {
+                const parsed = JSON.parse(backup);
+                if(parsed.tiles) tileState = parsed.tiles;
+                if(parsed.rng) rngState = parsed.rng;
+            }
             render();
+            renderRngBoard();
             updateSyncStatus('red', 'Offline Mode');
             showToast("Offline Mode Active");
         };
@@ -748,10 +821,19 @@
 
         window.resetBoard = () => {
             if (!isAdmin) return;
-            if(confirm("Clear the board for EVERYONE?")) {
-                state = tasks.map(() => ({ done: false }));
+            if(confirm("Clear the BINGO board for EVERYONE? (RNG stats will stay)")) {
+                tileState = tasks.map(() => ({ done: false }));
                 saveData();
                 render();
+            }
+        };
+
+        window.resetRng = () => {
+            if (!isAdmin) return;
+            if(confirm("Reset all XP Waste / RNG stats for EVERYONE?")) {
+                rngState = rngGames.map(() => ({ kc: 0, obtained: false }));
+                saveData();
+                renderRngBoard();
             }
         };
 
